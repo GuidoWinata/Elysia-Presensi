@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Level {
+  SISWA
+  GURU
+}
+
+
+model User {
+  id          Int   @id @default(autoincrement())
+  nama        String
+  password    String
+  level       Level
+}
+
+
+model Siswa {
+  id          Int    @id @default(autoincrement())
+  nisn        Int
+  nama        String
+  kelas       String
+  kehadiran   Kehadiran[]
+}
+
+
+model Kehadiran {
+  id          Int         @id @default(autoincrement())
+  tanggal     String    
+  wktdatang   String
+  wktpulang   String
+  siswaId     Int
+  siswa       Siswa       @relation(fields: [siswaId], references: [id])
+}
