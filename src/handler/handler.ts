@@ -1,6 +1,7 @@
 import prisma from '../db/client';
 import moment from 'moment';
 import { siswa, kehadiran, user } from '../db/data';
+import { Kehadiran } from '@prisma/client';
 
 export async function createPresensi(data: Partial<kehadiran>) {
   try {
@@ -52,7 +53,7 @@ export async function createSiswa(options: siswa) {
   }
 }
 
-export async function updateKehadiran(id: number, options: kehadiran) {
+export async function updateKehadiran(id: number, options: Kehadiran) {
   try {
     const hadir = await prisma.kehadiran.update({
       where: { id },
