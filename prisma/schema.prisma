@@ -37,10 +37,10 @@ model Siswa {
 
 
 model Kehadiran {
-  id          Int         @id @default(autoincrement())
-  tanggal     String    
-  wktdatang   String
-  wktpulang   String
-  siswaId     Int
-  siswa       Siswa       @relation(fields: [siswaId], references: [id])
+  id            Int         @id @default(autoincrement())
+  tanggal       DateTime?    
+  wktdatang     String?
+  wktpulang     String?
+  siswaId       Int
+  siswa         Siswa       @relation(fields: [siswaId], references: [id])
 }

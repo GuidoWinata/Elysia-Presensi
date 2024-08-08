@@ -1,6 +1,7 @@
 import { Elysia, t } from 'elysia';
 import { kehadiran } from '../db/data';
-import { createPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran } from '../handler/handler';
+import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi } from '../handler/handler';
+import { Kehadiran } from '@prisma/client';
 
 const presensiSC = t.Object({
   siswaId: t.Number(),
@@ -9,9 +10,9 @@ const presensiSC = t.Object({
 const router = new Elysia({ prefix: '/api' })
   .post(
     '/kehadiran',
-    async ({ body }: { body: Partial<kehadiran> }) => {
+    async ({ body }: { body: Kehadiran }) => {
       try {
-        const presensi = await createPresensi(body);
+        const presensi = await masukPresensi(body);
         console.log(presensi);
         return presensi;
       } catch (error) {
@@ -23,6 +24,15 @@ const router = new Elysia({ prefix: '/api' })
       body: presensiSC,
     }
   )
+  .patch('pulang/:id', async ({ params: { id } }) => {
+    try {
+      const pulang = await pulangPresensi(Number(id));
+      return pulang;
+    } catch (error) {
+      console.error('Error:', error);
+      return { error: 'Gagal mengupdate presensi' };
+    }
+  })
   .get('siswa/:id', ({ params: { id } }) => findSiswa(id), {
     params: t.Object({
       id: t.Number(),
@@ -35,16 +45,14 @@ const router = new Elysia({ prefix: '/api' })
       kelas: t.String(),
     }),
   })
-  .patch('kehadiran/:id', ({ params: { id }, body }) => updateKehadiran(id, body), {
-    params: t.Object({
-      id: t.Number(),
-    }),
-    body: t.Object({
-      tanggal: t.String(),
-      wktdatang: t.Date(),
-      wktpulang: t.Date(),
-      siswaId: t.Number(),
-    }),
+  .patch('kehadiran/:id', async ({ params, body }: { params: { id: number }; body: Kehadiran }) => {
+    try {
+      const updatepresen = await updateKehadiran(params.id, body);
+      return updatepresen;
+    } catch (error) {
+      console.error('Error update presensi:', error);
+      return { error: 'gagal update presensi' };
+    }
   })
   .get('/siswa', () => getAllSiswa())
   .get('/kehadiran', () => getAllKehadiran())
