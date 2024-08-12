@@ -6,6 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
@@ -18,21 +19,40 @@ enum Level {
   GURU
 }
 
+enum Kehadiran {
+  HADIR
+  SAKIT
+  TELAT
+}
+
 
 model User {
-  id          Int   @id @default(autoincrement())
-  nama        String
+  id          Int       @id @default(autoincrement())
+  email       String    @unique
   password    String
-  level       Level
+  token       String?
+  siswaId     Int?
+  kelasId     Int
+  siswa       Siswa?     @relation(fields: [siswaId], references: [id])
+  kelas       Kelas     @relation(fields: [kelasId], references: [id])
+}
+
+model Kelas {
+  id         Int   @id @default(autoincrement())
+  nama       String
+  User       User[]
+  Siswa      Siswa[]
 }
 
 
 model Siswa {
-  id          Int    @id @default(autoincrement())
+  id          Int           @id @default(autoincrement())
   nisn        Int
   nama        String
-  kelas       String
-  kehadiran   Kehadiran[]
+  kelasId     Int
+  kelas       Kelas         @relation(fields: [kelasId], references: [id])
+  kehadiran   Kehadiran
+  user        User[]
 }
 
 

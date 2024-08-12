@@ -1,7 +1,7 @@
 import prisma from '../db/client';
 import moment from 'moment';
-import { siswa, kehadiran, user } from '../db/data';
-import { Kehadiran } from '@prisma/client';
+import bcrypt from 'bcrypt';
+import { Kehadiran, Kelas, Siswa, User } from '@prisma/client';
 
 export async function masukPresensi(data: Kehadiran) {
   try {
@@ -23,6 +23,30 @@ export async function masukPresensi(data: Kehadiran) {
       console.log('Absensi hanya dapat dilakukan sebelum jam 7 pagi');
       return { message: 'Absensi hanya dapat dilakukan sebelum jam 7 pagi' };
     }
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+type createUser = {
+  email: string;
+  password: string;
+  siswaId?: number;
+  kelasId: number;
+};
+
+export async function createUser(body: createUser) {
+  try {
+    const hashedPassword = await bcrypt.hash(body.password, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        ...body,
+        password: hashedPassword,
+      },
+    });
+    return user;
   } catch (error) {
     console.error(error);
     throw error;
@@ -78,6 +102,24 @@ export async function findNama(nama: string) {
   }
 }
 
+type kelas = Omit<Kelas, 'id'>;
+
+export async function createKelas(body: kelas) {
+  try {
+    const kelas = await prisma.kelas.create({
+      data: body,
+    });
+    if (kelas) {
+      return { message: 'Berhasil membuat kelas', kelas };
+    } else {
+      return { message: 'Gagal membuat kelas' };
+    }
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 export async function deleteKehadiran(id: number) {
   try {
     const hapus = await prisma.kehadiran.delete({
@@ -97,10 +139,15 @@ export async function deleteKehadiran(id: number) {
   }
 }
 
-export async function createSiswa(options: siswa) {
+type inputSiswa = Omit<Siswa, 'id'>;
+
+export async function createSiswa(options: inputSiswa) {
   try {
     const siswa = await prisma.siswa.create({
       data: options,
+      include: {
+        kelas: true,
+      },
     });
     return siswa;
   } catch {
@@ -144,6 +191,7 @@ export async function getAllSiswa() {
     return await prisma.siswa.findMany({
       include: {
         kehadiran: true,
+        kelas: true,
       },
     });
   } catch {

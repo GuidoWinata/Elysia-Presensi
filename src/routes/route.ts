@@ -1,6 +1,6 @@
 import { Elysia, t } from 'elysia';
 import { kehadiran } from '../db/data';
-import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi } from '../handler/handler';
+import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi, createKelas, createUser } from '../handler/handler';
 import { Kehadiran } from '@prisma/client';
 
 const presensiSC = t.Object({
@@ -24,6 +24,19 @@ const router = new Elysia({ prefix: '/api' })
       body: presensiSC,
     }
   )
+  .post('user/', ({ body }) => createUser(body), {
+    body: t.Object({
+      email: t.String(),
+      password: t.String(),
+      siswaId: t.Optional(t.Number()),
+      kelasId: t.Number(),
+    }),
+  })
+  .post('kelas/', ({ body }) => createKelas(body), {
+    body: t.Object({
+      nama: t.String(),
+    }),
+  })
   .patch('pulang/:id', async ({ params: { id } }) => {
     try {
       const pulang = await pulangPresensi(Number(id));
@@ -42,7 +55,7 @@ const router = new Elysia({ prefix: '/api' })
     body: t.Object({
       nisn: t.Number(),
       nama: t.String(),
-      kelas: t.String(),
+      kelasId: t.Number(),
     }),
   })
   .patch('kehadiran/:id', async ({ params, body }: { params: { id: number }; body: Kehadiran }) => {
