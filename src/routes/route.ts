@@ -1,7 +1,7 @@
 import { Elysia, t } from 'elysia';
-import { kehadiran } from '../db/data';
-import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi, createKelas, createUser } from '../handler/handler';
+import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi, createKelas, createUser, countIzin } from '../handler/handler';
 import { Kehadiran } from '@prisma/client';
+import prisma from '../db/client';
 
 const presensiSC = t.Object({
   siswaId: t.Number(),
@@ -69,6 +69,53 @@ const router = new Elysia({ prefix: '/api' })
   })
   .get('/siswa', () => getAllSiswa())
   .get('/kehadiran', () => getAllKehadiran())
+  // .get('/kehadiran/:id', async (req) => {
+  //   try {
+  //     const bulan = req.query.bulan!;
+  //     const tahun = req.query.tahun!;
+
+  //     const id = parseInt(req.params.id);
+
+  //     const count = await countIzin(id, parseInt(bulan), parseInt(tahun));
+
+  //     return { count };
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //   }
+  // }) //Iki aku njajal dewe rek
+  .get('/kehadiran/:siswaId', async (req) => {
+    const siswaId = parseInt(req.params.siswaId);
+
+    const cekKehadiran = await prisma.kehadiran.findFirst({
+      where: {
+        siswaId: siswaId,
+        status: 'IZIN',
+      },
+    });
+
+    if (!cekKehadiran) {
+      return { message: `Siswa tidak memiliki status izin pada bulan ${req.query.bulan} - ${req.query.tahun}` };
+    }
+
+    const bulan = req.query.bulan!;
+    const tahun = req.query.tahun!;
+
+    const startDate = new Date(parseInt(tahun), parseInt(bulan) - 1, 1);
+    const endDate = new Date(parseInt(tahun), parseInt(bulan), 0);
+
+    const jumlahIzin = await prisma.kehadiran.count({
+      where: {
+        siswaId: siswaId,
+        status: 'IZIN',
+        tanggal: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+    });
+
+    return { jumlahIzin };
+  })
   .delete('kehadiran/:id', ({ params: { id } }) => deleteKehadiran(id), {
     params: t.Object({
       id: t.Number(),

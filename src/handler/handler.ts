@@ -7,21 +7,48 @@ export async function masukPresensi(data: Kehadiran) {
   try {
     const now = moment();
     const masuk = moment().set({ hour: 7, minute: 0, second: 0 });
+    const belumPulang = moment().set({ hour: 10, minute: 0, second: 0 });
+    const pulang = moment().set({ hour: 15, minute: 30, second: 0 });
     const formatDate = now.toISOString();
     const formatTime = now.format('HH:mm:ss');
+
+    if (!data.siswaId) {
+      throw new Error('siswaId tidak boleh kosong');
+    }
 
     if (now.isBefore(masuk)) {
       const presensi = await prisma.kehadiran.create({
         data: {
           tanggal: formatDate,
           wktdatang: formatTime,
-          siswaId: data.siswaId!,
+          status: 'HADIR',
+          siswaId: data.siswaId,
         },
       });
       return presensi;
-    } else {
-      console.log('Absensi hanya dapat dilakukan sebelum jam 7 pagi');
-      return { message: 'Absensi hanya dapat dilakukan sebelum jam 7 pagi' };
+    } else if (now.isBetween(masuk, belumPulang)) {
+      const telat = await prisma.kehadiran.create({
+        data: {
+          tanggal: formatDate,
+          wktdatang: formatTime,
+          status: 'TELAT',
+          siswaId: data.siswaId,
+        },
+      });
+      return telat;
+    } else if (now.isBetween(belumPulang, pulang)) {
+      return { message: 'Belum waktunya pulang' };
+    } else if (now.isAfter(pulang)) {
+      const waktuPulang = await prisma.kehadiran.create({
+        data: {
+          tanggal: formatDate,
+          wktpulang: formatTime,
+          status: 'PULANG',
+          siswaId: data.siswaId,
+        },
+      });
+
+      return waktuPulang;
     }
   } catch (error) {
     console.error(error);
@@ -152,6 +179,38 @@ export async function createSiswa(options: inputSiswa) {
     return siswa;
   } catch {
     console.error(Error);
+  }
+}
+
+export async function countIzin(id: number, tahun: number, bulan: number) {
+  try {
+    const siswaId = id;
+    const findSiswa = await prisma.kehadiran.findFirst({
+      where: { siswaId: siswaId },
+    });
+
+    if (!findSiswa) {
+      return { message: 'siswa tidak ditemukan' };
+    }
+
+    const awalTanggal = new Date(tahun, bulan - 1, 1);
+    const akhirTanggal = new Date(tahun, bulan, 0);
+
+    const countIzin = await prisma.kehadiran.count({
+      where: {
+        siswaId: siswaId,
+        status: 'IZIN',
+        tanggal: {
+          gte: awalTanggal,
+          lte: akhirTanggal,
+        },
+      },
+    });
+
+    return countIzin;
+  } catch (error) {
+    console.error(error);
+    throw error;
   }
 }
 
