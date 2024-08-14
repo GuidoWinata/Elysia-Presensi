@@ -1,7 +1,7 @@
 import prisma from '../db/client';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
-import { Kehadiran, Kelas, Siswa, User } from '@prisma/client';
+import { Kehadiran, Kelas, Siswa, Status, User } from '@prisma/client';
 
 export async function masukPresensi(data: Kehadiran) {
   try {
@@ -24,6 +24,9 @@ export async function masukPresensi(data: Kehadiran) {
           status: 'HADIR',
           siswaId: data.siswaId,
         },
+        include: {
+          siswa: true,
+        },
       });
       return presensi;
     } else if (now.isBetween(masuk, belumPulang)) {
@@ -33,6 +36,9 @@ export async function masukPresensi(data: Kehadiran) {
           wktdatang: formatTime,
           status: 'TELAT',
           siswaId: data.siswaId,
+        },
+        include: {
+          siswa: true,
         },
       });
       return telat;
@@ -46,10 +52,38 @@ export async function masukPresensi(data: Kehadiran) {
           status: 'PULANG',
           siswaId: data.siswaId,
         },
+        include: {
+          siswa: true,
+        },
       });
 
       return waktuPulang;
     }
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+export async function createKehadiran(body: { siswaId: number; status: string }) {
+  try {
+    const now = moment();
+    const tanggal = now.toDate();
+
+    const buat = await prisma.kehadiran.create({
+      data: {
+        tanggal: tanggal,
+        wktdatang: null,
+        wktpulang: null,
+        status: body.status as Status,
+        siswaId: body.siswaId,
+      },
+      include: {
+        siswa: true,
+      },
+    });
+
+    return buat;
   } catch (error) {
     console.error(error);
     throw error;

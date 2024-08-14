@@ -1,10 +1,18 @@
 import { Elysia, t } from 'elysia';
-import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi, createKelas, createUser, countIzin } from '../handler/handler';
+import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi, createKelas, createUser, countIzin, createKehadiran } from '../handler/handler';
 import { Kehadiran } from '@prisma/client';
 import prisma from '../db/client';
 
 const presensiSC = t.Object({
   siswaId: t.Number(),
+});
+
+const StatusEnum = t.Enum({
+  HADIR: 'HADIR',
+  IZIN: 'IZIN',
+  ALPHA: 'ALPHA',
+  TELAT: 'TELAT',
+  PULANG: 'PULANG',
 });
 
 const router = new Elysia({ prefix: '/api' })
@@ -24,6 +32,12 @@ const router = new Elysia({ prefix: '/api' })
       body: presensiSC,
     }
   )
+  .post('/siswa/kehadiran', async ({ body }) => createKehadiran(body), {
+    body: t.Object({
+      siswaId: t.Number(),
+      status: StatusEnum,
+    }),
+  })
   .post('user/', ({ body }) => createUser(body), {
     body: t.Object({
       email: t.String(),
