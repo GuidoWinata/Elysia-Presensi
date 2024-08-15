@@ -1,7 +1,7 @@
 import prisma from '../db/client';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
-import { Kehadiran, Kelas, Siswa, Status, User } from '@prisma/client';
+import { Kehadiran, Kelas, Siswa, User } from '@prisma/client';
 
 export async function masukPresensi(data: Kehadiran) {
   try {
@@ -175,6 +175,45 @@ export async function createKelas(body: kelas) {
     } else {
       return { message: 'Gagal membuat kelas' };
     }
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+enum Status {
+  HADIR = 'HADIR',
+  IZIN = 'IZIN',
+  ALPHA = 'ALPHA',
+  TELAT = 'TELAT',
+  PULANG = 'PULANG',
+}
+
+export async function groupByKeterangan(status: string, tanggal: Date) {
+  try {
+    const validStatus = status as Status;
+
+    const awalHari = moment(tanggal).startOf('day').toDate();
+    const akhirHari = moment(tanggal).endOf('day').toDate();
+
+    const statusSiswa = await prisma.kehadiran.findMany({
+      where: {
+        status: validStatus,
+        tanggal: {
+          gte: awalHari,
+          lte: akhirHari,
+        },
+      },
+      include: {
+        siswa: true,
+      },
+    });
+
+    if (!statusSiswa || statusSiswa.length === 0) {
+      return { message: `Tidak ada siswa yang berstatus '${validStatus}' pada tanggal ${tanggal.toLocaleString()}` };
+    }
+
+    return statusSiswa;
   } catch (error) {
     console.error(error);
     throw error;

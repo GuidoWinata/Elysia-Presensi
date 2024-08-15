@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi, createKelas, createUser, countIzin, createKehadiran } from '../handler/handler';
+import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi, createKelas, createUser, countIzin, createKehadiran, groupByKeterangan } from '../handler/handler';
 import { Kehadiran } from '@prisma/client';
 import prisma from '../db/client';
 
@@ -83,6 +83,25 @@ const router = new Elysia({ prefix: '/api' })
   })
   .get('/siswa', () => getAllSiswa())
   .get('/kehadiran', () => getAllKehadiran())
+  .get(
+    '/kehadiran/status',
+    async ({ query }) => {
+      const { status, tanggal } = query;
+
+      const parsedTanggal = new Date(tanggal);
+
+      console.log('status:', status);
+      console.log('tanggal:', parsedTanggal);
+
+      return await groupByKeterangan(status, parsedTanggal);
+    },
+    {
+      query: t.Object({
+        status: StatusEnum,
+        tanggal: t.String(),
+      }),
+    }
+  )
   // .get('/kehadiran/:id', async (req) => {
   //   try {
   //     const bulan = req.query.bulan!;
@@ -127,8 +146,6 @@ const router = new Elysia({ prefix: '/api' })
         },
       },
     });
-
-    return { jumlahIzin };
   })
   .delete('kehadiran/:id', ({ params: { id } }) => deleteKehadiran(id), {
     params: t.Object({

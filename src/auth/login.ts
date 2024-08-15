@@ -18,15 +18,10 @@ export const login = new Elysia()
         return { message: 'Email tidak di temukan' };
       }
 
-      if (email != user.email) {
-        set.status = 403;
-        return { message: 'Email anda salah' };
-      }
-
       const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword) {
+      if (!validPassword || email != user.email) {
         set.status = 403;
-        return { message: 'Password anda salah' };
+        return { message: 'Data yang anda masukkan salah' };
       }
 
       const accessToken = await jwtAccess.sign({
