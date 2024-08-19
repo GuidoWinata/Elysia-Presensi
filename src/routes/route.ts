@@ -41,6 +41,7 @@ const router = new Elysia({ prefix: '/api' })
   .post('user/', ({ body }) => createUser(body), {
     body: t.Object({
       email: t.String(),
+      nip: t.Optional(t.Number()),
       password: t.String(),
       siswaId: t.Optional(t.Number()),
       kelasId: t.Number(),
@@ -146,6 +147,8 @@ const router = new Elysia({ prefix: '/api' })
         },
       },
     });
+
+    return jumlahIzin;
   })
   .delete('kehadiran/:id', ({ params: { id } }) => deleteKehadiran(id), {
     params: t.Object({

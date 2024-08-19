@@ -91,7 +91,8 @@ export async function createKehadiran(body: { siswaId: number; status: string })
 }
 
 type createUser = {
-  email: string;
+  nip?: number;
+  email?: string;
   password: string;
   siswaId?: number;
   kelasId: number;
@@ -106,6 +107,7 @@ export async function createUser(body: createUser) {
         ...body,
         password: hashedPassword,
       },
+      include: { siswa: true },
     });
     return user;
   } catch (error) {

@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  previewFeatures = ["omitApi", "groupBy"]
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
@@ -30,7 +30,8 @@ enum Status {
 
 model User {
   id          Int       @id @default(autoincrement())
-  email       String    @unique
+  nip         Int?      @unique
+  email       String?   @unique
   password    String
   token       String?
   siswaId     Int?
@@ -49,7 +50,7 @@ model Kelas {
 
 model Siswa {
   id          Int           @id @default(autoincrement())
-  nisn        Int
+  nisn        Int           @unique
   nama        String
   kelasId     Int
   kelas       Kelas         @relation(fields: [kelasId], references: [id])

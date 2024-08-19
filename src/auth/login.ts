@@ -9,17 +9,46 @@ export const login = new Elysia()
   .post(
     '/api/login',
     async function handler({ body, set, jwtAccess }) {
-      const { email, password } = body;
-      const user = await prisma.user.findUnique({
-        where: { email },
-      });
-      if (!user) {
-        set.status = 403;
-        return { message: 'Email tidak di temukan' };
+      const { nisn, nip, password } = body;
+
+      let siswa;
+      let user;
+
+      if (nisn) {
+        siswa = await prisma.siswa.findUnique({
+          where: { nisn: nisn },
+          include: { user: true },
+        });
+
+        if (!siswa) {
+          set.status = 403;
+          return { message: 'NISN tidak ditemukan' };
+        }
+
+        user = await prisma.user.findUnique({
+          where: { id: siswa.id },
+        });
+
+        if (!user) {
+          set.status = 403;
+          return { message: 'Siswa tidak ditemukan' };
+        }
+      } else if (nip) {
+        user = await prisma.user.findUnique({
+          where: { nip: nip },
+        });
+
+        if (!user) {
+          set.status = 403;
+          return { message: 'NIP tidak ditemukan' };
+        }
+      } else {
+        set.status = 400;
+        return { message: 'NISN atau NIP harus diisi' };
       }
 
       const validPassword = await bcrypt.compare(password, user.password);
-      if (!validPassword || email != user.email) {
+      if (!validPassword) {
         set.status = 403;
         return { message: 'Data yang anda masukkan salah' };
       }
@@ -28,12 +57,15 @@ export const login = new Elysia()
         id: String(user.id),
       });
 
-      await prisma.user.update({
+      const login = await prisma.user.update({
         where: { id: user.id },
         data: { token: accessToken },
+        include: {
+          siswa: true,
+        },
       });
 
-      return { message: 'berhasil login', token: accessToken };
+      return login;
     },
     {
       body: 'basicAuthModel',
