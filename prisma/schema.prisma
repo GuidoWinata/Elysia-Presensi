@@ -30,7 +30,7 @@ enum Status {
 
 model User {
   id          Int       @id @default(autoincrement())
-  nip         Int?      @unique
+  nip         String?      @unique
   email       String?   @unique
   password    String
   token       String?
@@ -50,7 +50,7 @@ model Kelas {
 
 model Siswa {
   id          Int           @id @default(autoincrement())
-  nisn        Int           @unique
+  nisn        String?       @unique
   nama        String
   kelasId     Int
   kelas       Kelas         @relation(fields: [kelasId], references: [id])

@@ -41,7 +41,7 @@ const router = new Elysia({ prefix: '/api' })
   .post('user/', ({ body }) => createUser(body), {
     body: t.Object({
       email: t.String(),
-      nip: t.Optional(t.Number()),
+      nip: t.Optional(t.String()),
       password: t.String(),
       siswaId: t.Optional(t.Number()),
       kelasId: t.Number(),
@@ -68,7 +68,7 @@ const router = new Elysia({ prefix: '/api' })
   })
   .post('/siswa', ({ body }) => createSiswa(body), {
     body: t.Object({
-      nisn: t.Number(),
+      nisn: t.String(),
       nama: t.String(),
       kelasId: t.Number(),
     }),

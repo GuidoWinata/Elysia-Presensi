@@ -91,7 +91,7 @@ export async function createKehadiran(body: { siswaId: number; status: string })
 }
 
 type createUser = {
-  nip?: number;
+  nip?: string;
   email?: string;
   password: string;
   siswaId?: number;

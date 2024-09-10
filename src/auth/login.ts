@@ -9,20 +9,26 @@ export const login = new Elysia()
   .post(
     '/api/login',
     async function handler({ body, set, jwtAccess }) {
-      const { nisn, nip, password } = body;
+      const { identifier, password } = body;
 
-      let siswa;
       let user;
 
-      if (nisn) {
-        siswa = await prisma.siswa.findUnique({
-          where: { nisn: nisn },
+      if (identifier?.length === 10) {
+        const siswa = await prisma.siswa.findUnique({
+          where: { nisn: identifier },
           include: { user: true },
         });
 
         if (!siswa) {
           set.status = 403;
           return { message: 'NISN tidak ditemukan' };
+        }
+
+        user = siswa.user;
+
+        if (!user) {
+          set.status = 403;
+          return { message: 'User tidak menggunakan NISN' };
         }
 
         user = await prisma.user.findUnique({
@@ -33,18 +39,15 @@ export const login = new Elysia()
           set.status = 403;
           return { message: 'Siswa tidak ditemukan' };
         }
-      } else if (nip) {
+      } else {
         user = await prisma.user.findUnique({
-          where: { nip: nip },
+          where: { nip: identifier },
         });
 
         if (!user) {
           set.status = 403;
           return { message: 'NIP tidak ditemukan' };
         }
-      } else {
-        set.status = 400;
-        return { message: 'NISN atau NIP harus diisi' };
       }
 
       const validPassword = await bcrypt.compare(password, user.password);

@@ -4,8 +4,7 @@ import { nanoid } from 'nanoid';
 
 export const authModel = new Elysia().model({
   basicAuthModel: t.Object({
-    nisn: t.Optional(t.Number()),
-    nip: t.Optional(t.Number()),
+    identifier: t.Optional(t.String()),
     password: t.String(),
   }),
 });

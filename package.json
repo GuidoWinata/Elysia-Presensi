@@ -6,11 +6,13 @@
     "dev": "bun run --watch src/index.ts"
   },
   "dependencies": {
+    "@elysiajs/cors": "^1.1.1",
     "@elysiajs/jwt": "^1.1.0",
     "@elysiajs/swagger": "^1.1.0",
     "@prisma/client": "^5.18.0",
     "@types/bcrypt": "^5.0.2",
     "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
     "elysia": "latest",
     "moment": "^2.30.1",
     "nanoid": "^5.0.7"
