@@ -77,7 +77,7 @@ export const login = new Elysia()
         },
       });
 
-      return login;
+      return { message: 'Berhasil Login', login };
     },
     {
       body: 'basicAuthModel',
