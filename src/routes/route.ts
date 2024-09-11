@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi, createKelas, createUser, countIzin, createKehadiran, groupByKeterangan } from '../handler/handler';
+import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi, createKelas, createUser, countIzin, createKehadiran, groupByKeterangan, createGuru } from '../handler/handler';
 import { Kehadiran } from '@prisma/client';
 import prisma from '../db/client';
 
@@ -32,6 +32,13 @@ const router = new Elysia({ prefix: '/api' })
       body: presensiSC,
     }
   )
+  .post('/guru', async ({ body }) => createGuru(body), {
+    body: t.Object({
+      nama: t.String(),
+      nip: t.String(),
+      kelasId: t.Numeric(),
+    }),
+  })
   .post('/siswa/kehadiran', async ({ body }) => createKehadiran(body), {
     body: t.Object({
       siswaId: t.Number(),
@@ -40,11 +47,9 @@ const router = new Elysia({ prefix: '/api' })
   })
   .post('user/', ({ body }) => createUser(body), {
     body: t.Object({
-      email: t.String(),
-      nip: t.Optional(t.String()),
       password: t.String(),
       siswaId: t.Optional(t.Number()),
-      kelasId: t.Number(),
+      guruId: t.Optional(t.Number()),
     }),
   })
   .post('kelas/', ({ body }) => createKelas(body), {
@@ -103,20 +108,6 @@ const router = new Elysia({ prefix: '/api' })
       }),
     }
   )
-  // .get('/kehadiran/:id', async (req) => {
-  //   try {
-  //     const bulan = req.query.bulan!;
-  //     const tahun = req.query.tahun!;
-
-  //     const id = parseInt(req.params.id);
-
-  //     const count = await countIzin(id, parseInt(bulan), parseInt(tahun));
-
-  //     return { count };
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //   }
-  // }) //Iki aku njajal dewe rek
   .get('/kehadiran/:siswaId', async (req) => {
     const siswaId = parseInt(req.params.siswaId);
 

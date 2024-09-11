@@ -1,7 +1,7 @@
 import prisma from '../db/client';
 import moment from 'moment';
 import bcrypt from 'bcrypt';
-import { Kehadiran, Kelas, Siswa, User } from '@prisma/client';
+import { Guru, Kehadiran, Kelas, Siswa, User } from '@prisma/client';
 
 export async function masukPresensi(data: Kehadiran) {
   try {
@@ -91,11 +91,9 @@ export async function createKehadiran(body: { siswaId: number; status: string })
 }
 
 type createUser = {
-  nip?: string;
-  email?: string;
   password: string;
   siswaId?: number;
-  kelasId: number;
+  guruId?: number;
 };
 
 export async function createUser(body: createUser) {
@@ -109,7 +107,11 @@ export async function createUser(body: createUser) {
       },
       include: { siswa: true },
     });
-    return user;
+    if (user) {
+      return { message: 'Berhasil membuat data User', user };
+    } else {
+      return { message: 'Gagal membuat data User' };
+    }
   } catch (error) {
     console.error(error);
     throw error;
@@ -140,6 +142,28 @@ export async function pulangPresensi(id: number) {
     } else {
       console.log('Pulang hanya dapat dilakukan setelah jam 15:30');
       return { message: 'Pulang hanya dapat dilakukan setelah jam 15:30' };
+    }
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
+type guru = Omit<Guru, 'id'>;
+
+export async function createGuru(body: guru) {
+  try {
+    const guru = await prisma.guru.create({
+      data: body,
+      include: {
+        kelas: true,
+      },
+    });
+
+    if (guru) {
+      return { message: 'Berhasil membuat guru', guru };
+    } else {
+      return { message: 'Gagal membuat guru' };
     }
   } catch (error) {
     console.error(error);

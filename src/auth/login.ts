@@ -40,13 +40,22 @@ export const login = new Elysia()
           return { message: 'Siswa tidak ditemukan' };
         }
       } else {
-        user = await prisma.user.findUnique({
+        const guru = await prisma.guru.findUnique({
           where: { nip: identifier },
+        });
+
+        if (!guru) {
+          set.status = 403;
+          return { message: 'NIP tidak ditemukan' };
+        }
+
+        user = await prisma.user.findUnique({
+          where: { id: guru.id },
         });
 
         if (!user) {
           set.status = 403;
-          return { message: 'NIP tidak ditemukan' };
+          return { message: 'Guru tidak ditemukan' };
         }
       }
 

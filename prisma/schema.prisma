@@ -30,21 +30,28 @@ enum Status {
 
 model User {
   id          Int       @id @default(autoincrement())
-  nip         String?      @unique
-  email       String?   @unique
   password    String
   token       String?
   siswaId     Int?
-  kelasId     Int
+  guruId      Int?
   siswa       Siswa?     @relation(fields: [siswaId], references: [id])
-  kelas       Kelas     @relation(fields: [kelasId], references: [id])
+  guru        Guru?      @relation(fields: [guruId], references: [id])
 }
 
 model Kelas {
   id         Int   @id @default(autoincrement())
   nama       String
-  User       User[]
+  Guru       Guru[]
   Siswa      Siswa[]
+}
+
+model Guru {
+  id         Int        @id @default(autoincrement())
+  nama       String
+  nip        String     @unique
+  kelasId    Int
+  kelas      Kelas     @relation(fields: [kelasId], references: [id])
+  User       User[]
 }
 
 
