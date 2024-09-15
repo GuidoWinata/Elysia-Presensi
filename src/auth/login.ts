@@ -74,6 +74,7 @@ export const login = new Elysia()
         data: { token: accessToken },
         include: {
           siswa: true,
+          guru: true,
         },
       });
 
