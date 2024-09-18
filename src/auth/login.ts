@@ -13,7 +13,7 @@ export const login = new Elysia()
 
       let user;
 
-      if (identifier?.length === 10) {
+      if (identifier && identifier?.length <= 10) {
         const siswa = await prisma.siswa.findUnique({
           where: { nisn: identifier },
           include: { user: true },
