@@ -358,10 +358,15 @@ export async function getAllSiswa() {
 }
 
 export async function getAllKehadiran() {
+  
   try {
     return await prisma.kehadiran.findMany({
       include: {
-        siswa: true,
+        siswa: {
+          include: {
+            kelas: true
+          }
+        }
       },
     });
   } catch {
