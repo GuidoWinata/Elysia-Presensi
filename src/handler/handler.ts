@@ -326,6 +326,16 @@ export async function updateKehadiran(id: number, options: Kehadiran) {
   }
 }
 
+export async function getAllKelas() {
+  try {
+
+    return await prisma.kelas.findMany()
+  } catch(error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 export async function findSiswa(id: number) {
   try {
     const siswa = await prisma.siswa.findUnique({
@@ -360,7 +370,12 @@ export async function getAllSiswa() {
 export async function getAllKehadiran() {
   
   try {
-    return await prisma.kehadiran.findMany({
+    const data = await prisma.kehadiran.findMany({
+      where: {
+        wktdatang: {
+          not: null
+        }
+      },
       include: {
         siswa: {
           include: {
@@ -369,6 +384,13 @@ export async function getAllKehadiran() {
         }
       },
     });
+
+    if(!data) {
+      return {message: 'Tidak ada kehadiran hari ini'}
+    } 
+
+    return data
+
   } catch {
     console.log(Error);
   }

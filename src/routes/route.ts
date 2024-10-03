@@ -1,5 +1,5 @@
 import { Elysia, t } from 'elysia';
-import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi, createKelas, createUser, countIzin, createKehadiran, groupByKeterangan, createGuru } from '../handler/handler';
+import { masukPresensi, createSiswa, getAllSiswa, findSiswa, deleteKehadiran, getAllKehadiran, updateKehadiran, pulangPresensi, createKelas, createUser, countIzin, createKehadiran, groupByKeterangan, createGuru, getAllKelas } from '../handler/handler';
 import { Kehadiran } from '@prisma/client';
 import prisma from '../db/client';
 
@@ -108,6 +108,7 @@ const router = new Elysia({ prefix: '/api' })
       }),
     }
   )
+  .get('/kelas', () => getAllKelas())
   .get('/kehadiran/:siswaId', async (req) => {
     const siswaId = parseInt(req.params.siswaId);
 
